@@ -28,13 +28,14 @@ jobs:
             if [ -d "/home/docker/CoreELEC" ]; then
               sudo rm -rf /home/docker/CoreELEC
             fi
-            git clone git://github.com/CoreELEC/CoreELEC.git /home/docker/CoreELEC
+            sudo git clone git://github.com/CoreELEC/CoreELEC.git /home/docker/CoreELEC
             cd /home/docker/CoreELEC
             PROJECT=Amlogic time make image
-            # 假设构建完成后 Image.lzo 文件会生成在指定路径
-            # 这里你可能需要根据实际情况调整生成 kernel.img 的步骤
-            # 以下是一个示例，假设需要将 Image.lzo 转换为 kernel.img
-            sudo lzop -d build.CoreELEC-Amlogic.arm-20/build/linux-80dbca5bdc1754007a03bf32cd3638bfda94a640/arch/arm64/boot/Image.lzo -c | sudo tee /home/docker/kernel.img > /dev/null
+            if [ -f "build.CoreELEC-Amlogic.arm-20/build/linux-80dbca5bdc1754007a03bf32cd3638bfda94a640/arch/arm64/boot/Image.lzo" ]; then
+              sudo lzop -d build.CoreELEC-Amlogic.arm-20/build/linux-80dbca5bdc1754007a03bf32cd3638bfda94a640/arch/arm64/boot/Image.lzo -c | sudo tee /home/docker/kernel.img > /dev/null
+            else
+              echo "Image.lzo file not found. Build might have failed."
+            fi
           '
 
       - name: Upload kernel.img as artifact
