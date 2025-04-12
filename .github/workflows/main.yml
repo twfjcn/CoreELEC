@@ -24,18 +24,19 @@ jobs:
         docker run \
           --rm \
           --user "$(id -u):$(id -g)" \
-          -v ${{ github.workspace }}:/home/docker \
+          -v "${{ github.workspace }}":/home/docker \
           -e PROJECT=Amlogic \
-          -e DEVICE=AMLGX \  # 明确指定设备型号
+          -e DEVICE=AMLGX \
           coreelec/coreelec-builder:latest \
           /bin/bash -c "
-            rm -rf /home/docker/CoreELEC && \
-            git clone --depth 1 https://github.com/CoreELEC/CoreELEC.git /home/docker/CoreELEC && \
-            cd /home/docker/CoreELEC && \
-            make clean && \
-            ./configure --device=AMLGX && \  # 交互式配置步骤
-            time(make image -j$(nproc))"
-
+            set -ex
+            rm -rf /home/docker/CoreELEC
+            git clone --depth 1 https://github.com/CoreELEC/CoreELEC.git /home/docker/CoreELEC
+            cd /home/docker/CoreELEC
+            make clean
+            ./configure --device=AMLGX
+            time make image -j$(nproc)"
+            
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
