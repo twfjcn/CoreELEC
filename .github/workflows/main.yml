@@ -1,0 +1,41 @@
+name: CoreELEC Docker Build
+
+on:
+  workflow_dispatch:  # 允许手动触发
+  push:
+    branches: [ "main" ]  # 推送至main分支时自动触发
+
+jobs:
+  build-coreelec:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120  # 根据编译耗时调整
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Docker
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker.io
+        
+    - name: Pull CoreELEC builder image
+      run: docker pull coreelec/coreelec-builder:latest
+
+    - name: Build CoreELEC Image
+      run: |
+        docker run \
+          --rm \
+          -v ${{ github.workspace }}:/home/docker \
+          -e PROJECT=Amlogic \  # 指定构建目标设备类型
+          coreelec/coreelec-builder:latest \
+          /bin/bash -c "
+            git clone git://github.com/CoreELEC/CoreELEC.git /home/docker/CoreELEC && \
+            cd /home/docker/CoreELEC && \
+            time(make image -j$(nproc))"  # 自动检测CPU核心数并行编译
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: coreelec-image
+        path: ${{ github.workspace }}/CoreELEC/target/*.img  # 匹配生成的镜像文件
