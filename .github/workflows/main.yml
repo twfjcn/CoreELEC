@@ -1,12 +1,12 @@
-name: CoreELEC Build
+name: CoreELEC Build and Upload to Releases
 
 on:
   push:
-    branches:
-      - '*'
+    tags:
+      - '*'  # 当有新的标签推送时触发工作流
 
 jobs:
-  build-coreelec:
+  build-and-upload:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -22,4 +22,32 @@ jobs:
           git clone git://github.com/CoreELEC/CoreELEC.git ~/CoreELEC
           cd ~/CoreELEC
           time make image PROJECT=Amlogic
-          EOF    
+          EOF
+
+      - name: Find the built image file
+        id: find-image
+        run: |
+          image_file=$(find ~/CoreELEC/target -type f -name "*.img" | head -n 1)
+          echo "::set-output name=image_path::$image_file"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.find-image.outputs.image_path }}
+          asset_name: coreelec-${{ github.ref_name }}.img
+          asset_content_type: application/octet-stream    
