@@ -12,12 +12,25 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4  # 使用官方推荐的最新稳定版本
+      uses: actions/checkout@v4
 
-    - name: Setup Docker
+    - name: Clean Existing Docker
       run: |
-        sudo apt-get update
-        sudo apt-get install -y docker.io
+        # 清理可能存在的旧版本冲突包
+        sudo apt-get remove -y containerd docker.io runc || true
+        sudo apt-get autoremove -y
+
+    - name: Install Docker via Official Script
+      run: |
+        # 使用官方安装脚本避免依赖冲突
+        curl -fsSL https://get.docker.com | sudo sh
+        sudo usermod -aG docker $USER
+        sudo systemctl enable docker
+
+    - name: Verify Docker
+      run: |
+        docker --version
+        docker info
 
     - name: Pull CoreELEC builder image
       run: docker pull coreelec/coreelec-builder:latest
@@ -35,8 +48,8 @@ jobs:
             time(make image -j$(nproc))"
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4  # 升级到v4版本
+      uses: actions/upload-artifact@v4
       with:
         name: coreelec-image
         path: ${{ github.workspace }}/CoreELEC/target/*.img
-        if-no-files-found: error  # 明确文件缺失处理方式
+        if-no-files-found: error
