@@ -3,7 +3,7 @@ name: CoreELEC Build
 on:
   push:
     branches:
-      - main  # 当 main 分支有推送时触发工作流
+      - '*'
 
 jobs:
   build-coreelec:
