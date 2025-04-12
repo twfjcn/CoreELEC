@@ -34,7 +34,6 @@ jobs:
             git clone --depth 1 https://github.com/CoreELEC/CoreELEC.git /home/docker/CoreELEC
             cd /home/docker/CoreELEC
             make clean
-            ./configure --device=AMLGX
             time make image -j$(nproc)"
             
     - name: Upload Artifact
