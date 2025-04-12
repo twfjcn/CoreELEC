@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git build-essential bc flex bison
+          sudo apt-get install -y git build-essential bc flex bison xfonts-utils rdfind libparse-yapp-perl gperf xsltproc patchutils lzop libxml-parser-perl
 
       - name: Clone CoreELEC repository
         run: git clone https://github.com/twfjcn/CoreELEC.git ~/CoreELEC
