@@ -23,7 +23,7 @@ jobs:
           sudo apt-get install -y git build-essential
 
       - name: Clone CoreELEC repository
-        run: git clone git://github.com/CoreELEC/CoreELEC.git ~/CoreELEC
+        run: git clone https://github.com/twfjcn/CoreELEC.git ~/CoreELEC
 
       - name: Navigate to CoreELEC directory
         run: cd ~/CoreELEC
