@@ -20,9 +20,12 @@ jobs:
         run: |
           docker run -v ${{ runner.workspace }}/:/home/docker -h coreelec coreelec/coreelec-builder:latest bash -c '
             sudo apt-get update
+            if [ -d "/home/docker/CoreELEC" ]; then
+              rm -rf /home/docker/CoreELEC
+            fi
             git clone git://github.com/CoreELEC/CoreELEC.git ~/CoreELEC
             cd ~/CoreELEC
-            PROJECT=Amlogic time(make image)
+            PROJECT=Amlogic time make image
             # 假设构建完成后 Image.lzo 文件会生成在指定路径
             # 这里你可能需要根据实际情况调整生成 kernel.img 的步骤
             # 以下是一个示例，假设需要将 Image.lzo 转换为 kernel.img
@@ -33,4 +36,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kernel-image
-          path: kernel.img    
+          path: kernel.img
