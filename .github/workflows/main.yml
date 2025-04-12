@@ -18,7 +18,7 @@ jobs:
 
       - name: Run Docker container and build
         run: |
-          docker run -v ${{ runner.workspace }}/:/home/docker -h coreelec -it coreelec/coreelec-builder:latest bash -c '
+          docker run -v ${{ runner.workspace }}/:/home/docker -h coreelec coreelec/coreelec-builder:latest bash -c '
             sudo apt-get update
             git clone git://github.com/CoreELEC/CoreELEC.git ~/CoreELEC
             cd ~/CoreELEC
@@ -33,4 +33,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kernel-image
-          path: kernel.img
+          path: kernel.img    
