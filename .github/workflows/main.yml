@@ -17,10 +17,9 @@ jobs:
 
       - name: Run CoreELEC builder container and build image
         run: |
-          docker run -v $(pwd):/home/docker -h coreelec -it coreelec/coreelec-builder:latest /bin/bash << EOF
+          docker run -v $(pwd):/home/docker -h coreelec coreelec/coreelec-builder:latest /bin/bash << EOF
           sudo apt-get update
           git clone git://github.com/CoreELEC/CoreELEC.git ~/CoreELEC
           cd ~/CoreELEC
           time make image PROJECT=Amlogic
-          EOF
-    
+          EOF    
