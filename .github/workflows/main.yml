@@ -1,4 +1,4 @@
-name: CoreELEC Kernel Build
+name: CoreELEC Docker Image Build
 
 on:
   push:
@@ -10,61 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clean up cache
-        run: |
-          rm -rf ~/.cache/act/actions/actions-upload-artifact
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Pull Docker image
+        run: docker pull coreelec/coreelec-builder:latest
+
+      - name: Run Docker container and build
         run: |
-          sudo apt-get update
-          sudo apt-get install -y git build-essential bc flex bison xfonts-utils rdfind libparse-yapp-perl gperf xsltproc patchutils lzop libxml-parser-perl dos2unix
-
-      - name: Clone CoreELEC repository
-        run: git clone https://github.com/twfjcn/CoreELEC.git ~/CoreELEC
-
-      - name: Navigate to CoreELEC directory
-        run: cd ~/CoreELEC
-
-      - name: Convert line endings
-        run: |
-          dos2unix config/functions config/options
-
-      - name: Fix syntax in config/functions
-        run: |
-          # 备份原始文件
-          cp config/functions config/functions.bak
-          # 替换 [[ ]] 为 [ ] 并处理正则匹配
-          sed -i 's/\[\[ \!/[ \!/' config/functions
-          # 对于正则匹配部分，先提取正则表达式，再用其他方式实现
-          # 这里假设正则表达式为简单的字符串匹配，用 = 代替 =~
-          sed -i 's/=~ /=/' config/functions
-          sed -i 's/\]\] \&\&/ ] \&\&/' config/functions
-          sed -i 's/\]\]; then/ ]; then/' config/functions
-          # 检查文件是否有明显的语法错误
-          bash -n config/functions
-
-      - name: Source functions file
-        run: |
-          source config/functions
-
-      - name: Clean build cache
-        run: |
-          cd ~/CoreELEC
-          make clean
-
-      - name: Build CoreELEC image
-        run: |
-          PROJECT=Amlogic DEVICE=AMLGX ARCH=arm make image
-          # 假设构建完成后 Image.lzo 文件会生成在指定路径
-          # 这里你可能需要根据实际情况调整生成 kernel.img 的步骤
-          # 以下是一个示例，假设需要将 Image.lzo 转换为 kernel.img
-          lzop -d build.CoreELEC-Amlogic.arm-20/build/linux-80dbca5bdc1754007a03bf32cd3638bfda94a640/arch/arm64/boot/Image.lzo -c > kernel.img
+          docker run -v ${{ runner.workspace }}/:/home/docker -h coreelec -it coreelec/coreelec-builder:latest bash -c '
+            sudo apt-get update
+            git clone git://github.com/CoreELEC/CoreELEC.git ~/CoreELEC
+            cd ~/CoreELEC
+            PROJECT=Amlogic time(make image)
+            # 假设构建完成后 Image.lzo 文件会生成在指定路径
+            # 这里你可能需要根据实际情况调整生成 kernel.img 的步骤
+            # 以下是一个示例，假设需要将 Image.lzo 转换为 kernel.img
+            lzop -d build.CoreELEC-Amlogic.arm-20/build/linux-80dbca5bdc1754007a03bf32cd3638bfda94a640/arch/arm64/boot/Image.lzo -c > kernel.img
+          '
 
       - name: Upload kernel.img as artifact
         uses: actions/upload-artifact@v4
         with:
           name: kernel-image
-          path: kernel.img    
+          path: kernel.img
