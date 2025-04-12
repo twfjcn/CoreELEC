@@ -13,6 +13,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
       - name: Pull Docker image
         run: docker pull coreelec/coreelec-builder:latest
 
@@ -36,4 +41,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kernel-image
-          path: kernel.img    
+          path: kernel.img
+          if-no-files-found: warn
+          compression-level: 6
+          overwrite: false
+          include-hidden-files: false    
