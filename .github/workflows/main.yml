@@ -22,6 +22,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git build-essential
 
+     - name: Install dependencies
+       run: |
+          sudo apt-get update
+          sudo apt-get install -y git build-essential <其他依赖项>
+
       - name: Clone CoreELEC repository
         run: git clone https://github.com/twfjcn/CoreELEC.git ~/CoreELEC
 
