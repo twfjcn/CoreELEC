@@ -28,11 +28,14 @@ jobs:
       - name: Navigate to CoreELEC directory
         run: cd ~/CoreELEC
 
-      - name: Comment out invalid dependency
+      - name: Fix invalid dependency
         run: |
           # 假设依赖项在 config/packages/linux-drivers 中
-          # 此命令会在包含 gpu-aml 的行前添加 # 进行注释
-          sed -i 's/^.*gpu-aml.*$/#&/' config/packages/linux-drivers
+          # 尝试将 gpu-aml 替换为空字符串
+          sed -i 's/gpu-aml//g' config/packages/linux-drivers
+          # 移除多余的空格和分隔符
+          sed -i 's/  */ /g' config/packages/linux-drivers
+          sed -i 's/^ //;s/ $//' config/packages/linux-drivers
         continue-on-error: true
 
       - name: Clean build cache
