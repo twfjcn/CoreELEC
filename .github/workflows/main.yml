@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git build-essential bc flex bison xfonts-utils rdfind libparse-yapp-perl gperf xsltproc patchutils lzop libxml-parser-perl
+          sudo apt-get install -y git build-essential bc flex bison xfonts-utils rdfind libparse-yapp-perl gperf xsltproc patchutils lzop libxml-parser-perl dos2unix
 
       - name: Clone CoreELEC repository
         run: git clone https://github.com/twfjcn/CoreELEC.git ~/CoreELEC
@@ -28,15 +28,13 @@ jobs:
       - name: Navigate to CoreELEC directory
         run: cd ~/CoreELEC
 
-      - name: Search and remove invalid dependency
+      - name: Convert line endings
         run: |
-          # 搜索项目中所有文件，将 gpu-aml 替换为空字符串
-          grep -rl 'gpu-aml' . | xargs sed -i 's/gpu-aml//g'
-          # 移除多余的空格和分隔符
-          grep -rl '  ' . | xargs sed -i 's/  */ /g'
-          grep -rl '^ ' . | xargs sed -i 's/^ //'
-          grep -rl ' $' . | xargs sed -i 's/ $//'
-        continue-on-error: true
+          dos2unix config/functions config/options
+
+      - name: Source functions file
+        run: |
+          source config/functions
 
       - name: Clean build cache
         run: |
