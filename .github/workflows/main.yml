@@ -23,35 +23,29 @@ jobs:
       run: |
         docker run \
           --rm \
-          --user root \  # 临时使用root权限安装依赖
+          --user root \
           -v "${{ github.workspace }}":/home/docker \
           -e PROJECT=Amlogic \
           -e DEVICE=AMLGX \
           coreelec/coreelec-builder:latest \
-          /bin/bash -c "
-            set -ex
-            # 安装基础编译依赖
+          /bin/bash -c "set -ex
             apt-get update && apt-get install -y \
                 bc build-essential ccache flex gawk gettext git \
                 libncurses5-dev libssl-dev python3-dev unzip zlib1g-dev
-
-            # 安装Amlogic专用工具链
+            
             mkdir -p /opt/toolchains
             wget https://github.com/CoreELEC/toolchains/archive/master.zip -O /tmp/toolchains.zip
             unzip /tmp/toolchains.zip -d /opt/toolchains
-
-            # 准备构建环境
+            
             rm -rf /home/docker/CoreELEC
             git clone --depth 1 https://github.com/CoreELEC/CoreELEC.git /home/docker/CoreELEC
             cd /home/docker/CoreELEC
             
-            # 配置环境变量
-            export PATH=/opt/toolchains/toolchains-master/aarch64-libreelec-linux-gnu/bin:$PATH
+            export PATH=/opt/toolchains/toolchains-master/aarch64-libreelec-linux-gnu/bin:\$PATH
             export CROSS_COMPILE=aarch64-libreelec-linux-gnu-
             
-            # 执行完整构建流程
             make clean
-            time make image -j$(nproc)"
+            time make image -j\$(nproc)"
             
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
