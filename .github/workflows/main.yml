@@ -1,5 +1,4 @@
 name: CoreELEC Build and Upload to Releases
-
 on:
   push:
     tags:
