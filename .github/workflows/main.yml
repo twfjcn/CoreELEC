@@ -1,49 +1,26 @@
-name: CoreELEC Docker Image Build
+name: CoreELEC Build
 
 on:
   push:
     branches:
-      - '*'
+      - main  # 当 main 分支有推送时触发工作流
 
 jobs:
-  build:
+  build-coreelec:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Pull Docker image
+      - name: Pull CoreELEC builder Docker image
         run: docker pull coreelec/coreelec-builder:latest
 
-      - name: Run Docker container and build
+      - name: Run CoreELEC builder container and build image
         run: |
-          docker run -v ${{ runner.workspace }}/:/home/docker -h coreelec coreelec/coreelec-builder:latest bash -c '
-            sudo apt-get update
-            if [ -d "/home/docker/CoreELEC" ]; then
-              sudo rm -rf /home/docker/CoreELEC
-            fi
-            sudo git clone git://github.com/CoreELEC/CoreELEC.git /home/docker/CoreELEC
-            cd /home/docker/CoreELEC
-            PROJECT=Amlogic time make image
-            if [ -f "build.CoreELEC-Amlogic.arm-20/build/linux-80dbca5bdc1754007a03bf32cd3638bfda94a640/arch/arm64/boot/Image.lzo" ]; then
-              sudo lzop -d build.CoreELEC-Amlogic.arm-20/build/linux-80dbca5bdc1754007a03bf32cd3638bfda94a640/arch/arm64/boot/Image.lzo -c | sudo tee /home/docker/kernel.img > /dev/null
-            else
-              echo "Image.lzo file not found. Build might have failed."
-            fi
-          '
-
-      - name: Upload kernel.img as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kernel-image
-          path: kernel.img
-          if-no-files-found: warn
-          compression-level: 6
-          overwrite: false
-          include-hidden-files: false    
+          docker run -v $(pwd):/home/docker -h coreelec -it coreelec/coreelec-builder:latest /bin/bash << EOF
+          sudo apt-get update
+          git clone git://github.com/CoreELEC/CoreELEC.git ~/CoreELEC
+          cd ~/CoreELEC
+          time make image PROJECT=Amlogic
+          EOF
+    
