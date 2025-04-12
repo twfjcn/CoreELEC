@@ -37,7 +37,7 @@ jobs:
           lzop -d build.CoreELEC-Amlogic-ne.arm-20/build/linux-80dbca5bdc1754007a03bf32cd3638bfda94a640/arch/arm64/boot/Image.lzo -c > kernel.img
 
       - name: Upload kernel.img as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kernel-image
           path: kernel.img
