@@ -14,36 +14,27 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Clean Existing Docker
+    - name: Setup Docker
       run: |
-        # 清理可能存在的旧版本冲突包
-        sudo apt-get remove -y containerd docker.io runc || true
-        sudo apt-get autoremove -y
-
-    - name: Install Docker via Official Script
-      run: |
-        # 使用官方安装脚本避免依赖冲突
         curl -fsSL https://get.docker.com | sudo sh
         sudo usermod -aG docker $USER
-        sudo systemctl enable docker
 
-    - name: Verify Docker
+    - name: Prepare Workspace
       run: |
-        docker --version
-        docker info
-
-    - name: Pull CoreELEC builder image
-      run: docker pull coreelec/coreelec-builder:latest
+        mkdir -p ${{ github.workspace }}/CoreELEC
+        sudo chmod -R 777 ${{ github.workspace }}
 
     - name: Build CoreELEC Image
       run: |
         docker run \
           --rm \
+          --user "$(id -u):$(id -g)" \
           -v ${{ github.workspace }}:/home/docker \
           -e PROJECT=Amlogic \
           coreelec/coreelec-builder:latest \
           /bin/bash -c "
-            git clone https://github.com/CoreELEC/CoreELEC.git /home/docker/CoreELEC && \
+            mkdir -p /home/docker/CoreELEC && \
+            git clone --depth 1 https://github.com/CoreELEC/CoreELEC.git /home/docker/CoreELEC && \
             cd /home/docker/CoreELEC && \
             time(make image -j$(nproc))"
 
