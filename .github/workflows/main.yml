@@ -32,21 +32,16 @@ jobs:
         run: |
           dos2unix config/functions config/options
 
+      - name: Fix syntax in config/functions
+        run: |
+          # 将 [[ ]] 替换为 [ ]
+          sed -i 's/\[\[ \!/[ \!/' config/functions
+          sed -i 's/\]\] \&\&/ ] \&\&/' config/functions
+          sed -i 's/\]\]; then/ ]; then/' config/functions
+
       - name: Source functions file
         run: |
           source config/functions
-
-      - name: Thoroughly remove invalid dependency
-        run: |
-          # 搜索项目中所有文件，将 gpu-aml 替换为空字符串
-          grep -rl 'gpu-aml' . | xargs sed -i 's/gpu-aml//g'
-          # 移除多余的空格和分隔符
-          grep -rl '  ' . | xargs sed -i 's/  */ /g'
-          grep -rl '^ ' . | xargs sed -i 's/^ //'
-          grep -rl ' $' . | xargs sed -i 's/ $//'
-          # 检查 genbuildplan.py 脚本是否有硬编码检查
-          sed -i '/gpu-aml/d' scripts/genbuildplan.py
-        continue-on-error: true
 
       - name: Clean build cache
         run: |
